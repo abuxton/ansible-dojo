@@ -1,0 +1,24 @@
+---
+roles:
+  pe-puppet-master:
+    private_networks:
+      - {ip: '0.0.0.0', auto_network: true}
+    forwarded_port:
+      - {guest: 443, host: 4443, auto_correct: true}
+    provider:
+      type: virtualbox
+      customize:
+        - [modifyvm, !ruby/sym id, '--memory', 4096]
+    provisioners:
+      - {type: hosts, sync_hosts: true}
+      - {type: pe_bootstrap, role: !ruby/sym master}
+      - {type: shell, inline: "systemctl disable firewalld ; systemctl stop firewalld"
+      - {type: shell, inline: "cat /etc/hosts"}
+
+  pe-puppet-agent:
+    private_networks:
+      - {ip: '0.0.0.0', auto_network: true}
+    provisioners:
+      - {type: hosts, sync_hosts: true}
+      - {type: pe_bootstrap, master: master.b.dnc.example}
+      - {type: shell, inline: "systemctl disable firewalld ; systemctl stop firewalld"}
